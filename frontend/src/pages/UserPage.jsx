@@ -13,7 +13,7 @@ function UserPage() {
     // 페이지 방문시 유저 정보 요청
     useEffect(() => {
 
-        const userInfo = async () => {
+        const fetchUserInfo = async () => {
 
             try {
 
@@ -30,19 +30,21 @@ function UserPage() {
                 const data = await res.json();
                 setUserInfo(data);
 
+            // eslint-disable-next-line no-unused-vars
             } catch (err) {
                 setError("유저 정보를 불러오지 못했습니다.");
             }
 
         };
 
-        userInfo();
+        fetchUserInfo();
 
     }, []);
 
     return (
         <div>
             <h1>내 정보</h1>
+            {error && <p style={{ color: 'red' }}>{error}</p>}
             <p>아이디: {userInfo?.username}</p>
             <p>닉네임: {userInfo?.nickname}</p>
             <p>이메일: {userInfo?.email}</p>

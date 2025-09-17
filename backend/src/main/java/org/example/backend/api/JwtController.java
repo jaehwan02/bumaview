@@ -22,7 +22,7 @@ public class JwtController {
 
     // 소셜 로그인 쿠키 방식의 Refresh 토큰 헤더 방식으로 교환
     @PostMapping(value = "/jwt/exchange", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public JWTResponseDTO jwtExchangeApi(
+    public JWTResponseDTO exchangeCookieForJwt(
             HttpServletRequest request,
             HttpServletResponse response
     ) {
@@ -31,7 +31,7 @@ public class JwtController {
 
     // Refresh 토큰으로 Access 토큰 재발급 (Rotate 포함)
     @PostMapping(value = "/jwt/refresh", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public JWTResponseDTO jwtRefreshApi(
+    public JWTResponseDTO refreshJwt(
             @Validated @RequestBody RefreshRequestDTO dto
     ) {
         return jwtService.refreshRotate(dto);

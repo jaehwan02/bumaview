@@ -61,7 +61,7 @@ public class UserService extends DefaultOAuth2UserService implements UserDetails
                 .password(passwordEncoder.encode(dto.getPassword()))
                 .isLock(false)
                 .isSocial(false)
-                .roleType(UserRoleType.USER) // 우선 일반 유저로 가입
+                .roleType(UserRoleType.STUDENT) // 우선 일반 유저로 가입
                 .nickname(dto.getNickname())
                 .email(dto.getEmail())
                 .build();

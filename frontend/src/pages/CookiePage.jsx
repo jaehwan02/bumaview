@@ -12,7 +12,7 @@ function CookiePage() {
     useEffect(() => {
         
         // 페이지 접근시 (백엔드에서 리디렉션으로 여기로 보내면, 실행)
-        const cookieToBody = async () => {
+        const exchangeCookieForToken = async () => {
 
             try {
 
@@ -29,6 +29,7 @@ function CookiePage() {
                 localStorage.setItem("refreshToken", data.refreshToken);
 
                 navigate("/");
+            // eslint-disable-next-line no-unused-vars
             } catch (err) {
                 alert("소셜 로그인 실패");
                 navigate("/login");
@@ -36,7 +37,7 @@ function CookiePage() {
 
         };
 
-        cookieToBody();
+        exchangeCookieForToken();
 
     }, [navigate]);
 
