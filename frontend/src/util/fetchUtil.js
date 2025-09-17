@@ -47,6 +47,7 @@ export async function fetchWithAccess(url, options = {}) {
             // 재요청
             response = await fetch(url, options);
 
+        // eslint-disable-next-line no-unused-vars
         } catch (err) {
 
             localStorage.removeItem("accessToken");

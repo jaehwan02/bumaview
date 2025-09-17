@@ -1,12 +1,7 @@
-import { useState } from "react";
-
 // .env로 부터 백엔드 URL 받아오기
 const BACKEND_API_BASE_URL = import.meta.env.VITE_BACKEND_API_BASE_URL;
 
 function LoginPage() {
-
-    // .env로 부터 백엔드 URL 받아오기
-    const BACKEND_API_BASE_URL = import.meta.env.VITE_BACKEND_API_BASE_URL;
 
     // 소셜 로그인 이벤트
     const handleSocialLogin = (provider) => {
