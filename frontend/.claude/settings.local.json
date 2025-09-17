@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(/Users/jaehwan/Documents/SpringBootProjects/spring_react_login/backend/**)",
+      "Read(/Users/jaehwan/Documents/SpringBootProjects/spring_react_login/backend/src/main/java/org/example/backend/**)",
+      "Read(/Users/jaehwan/Documents/SpringBootProjects/spring_react_login/**)",
+      "Read(/Users/jaehwan/Documents/SpringBootProjects/spring_react_login/**)",
+      "Read(/Users/jaehwan/Documents/SpringBootProjects/spring_react_login/backend/**)",
+      "Read(/Users/jaehwan/Documents/SpringBootProjects/spring_react_login/backend/src/main/java/org/example/backend/**)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
