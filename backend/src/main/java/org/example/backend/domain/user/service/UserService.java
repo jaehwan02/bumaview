@@ -135,46 +135,45 @@ public class UserService extends DefaultOAuth2UserService implements UserDetails
         // 부모 메소드 호출
         OAuth2User oAuth2User = super.loadUser(userRequest);
 
-        // 데이터
-        Map<String, Object> attributes;
-        List<GrantedAuthority> authorities;
-
-        String username;
-        String role = UserRoleType.USER.name();
-        String email;
-        String nickname;
-
         // provider 제공자별 데이터 획득
         String registrationId = userRequest.getClientRegistration().getRegistrationId().toUpperCase();
-        if (registrationId.equals(SocialProviderType.NAVER.name())) {
 
-            attributes = (Map<String, Object>) oAuth2User.getAttributes().get("response");
-            username = registrationId + "_" + attributes.get("id");
-            email = attributes.get("email").toString();
-            nickname = attributes.get("nickname").toString();
-
-        } else if (registrationId.equals(SocialProviderType.GOOGLE.name())) {
-
-            attributes = (Map<String, Object>) oAuth2User.getAttributes();
-            username = registrationId + "_" + attributes.get("sub");
-            email = attributes.get("email").toString();
-            nickname = attributes.get("name").toString();
-
-        } else {
+        // google만 허용
+        if (!registrationId.equals(SocialProviderType.GOOGLE.name())) {
             throw new OAuth2AuthenticationException("지원하지 않는 소셜 로그인입니다.");
+        }
+
+        // 데이터
+        Map<String, Object> attributes = oAuth2User.getAttributes();
+        String username = registrationId + "_" + attributes.get("sub");
+        String email = attributes.get("email").toString();
+        String nickname = attributes.get("name").toString();
+
+        // 이메일 도메인 검증
+        if (!email.endsWith("@bssm.hs.kr")) {
+            throw new OAuth2AuthenticationException("허용되지 않은 이메일 도메인입니다.");
+        }
+
+        // 역할(role) 부여
+        UserRoleType roleType;
+        String emailPrefix = email.split("@")[0];
+        if (emailPrefix.startsWith("teacher")) {
+            roleType = UserRoleType.TEACHER;
+        } else if (emailPrefix.matches("\\d.*")) {
+            roleType = UserRoleType.STUDENT;
+        } else {
+            throw new OAuth2AuthenticationException("유효하지 않은 이메일 형식입니다.");
         }
 
         // 데이터베이스 조회 -> 존재하면 업데이트, 없으면 신규 가입
         Optional<UserEntity> entity = userRepository.findByUsernameAndIsSocial(username, true);
         if (entity.isPresent()) {
-            // role 조회
-            role = entity.get().getRoleType().name();
-
             // 기존 유저 업데이트
             UserRequestDTO dto = new UserRequestDTO();
             dto.setNickname(nickname);
             dto.setEmail(email);
             entity.get().updateUser(dto);
+            entity.get().updateRole(roleType);
 
             userRepository.save(entity.get());
         } else {
@@ -185,7 +184,7 @@ public class UserService extends DefaultOAuth2UserService implements UserDetails
                     .isLock(false)
                     .isSocial(true)
                     .socialProviderType(SocialProviderType.valueOf(registrationId))
-                    .roleType(UserRoleType.USER)
+                    .roleType(roleType)
                     .nickname(nickname)
                     .email(email)
                     .build();
@@ -193,7 +192,7 @@ public class UserService extends DefaultOAuth2UserService implements UserDetails
             userRepository.save(newUserEntity);
         }
 
-        authorities = List.of(new SimpleGrantedAuthority(role));
+        List<GrantedAuthority> authorities = List.of(new SimpleGrantedAuthority(roleType.name()));
 
         return new CustomOAuth2User(attributes, authorities, username);
     }

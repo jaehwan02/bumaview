@@ -4,7 +4,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.example.backend.domain.jwt.service.JwtService;
 import org.example.backend.domain.user.entity.UserRoleType;
 import org.example.backend.filter.JWTFilter;
-import org.example.backend.filter.LoginFilter;
 import org.example.backend.handler.RefreshTokenLogoutHandler;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -12,8 +11,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -22,7 +19,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.logout.LogoutFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -34,34 +30,23 @@ import java.util.List;
 @EnableWebSecurity
 public class SecurityConfig {
 
-    private final AuthenticationConfiguration authenticationConfiguration;
-    private final AuthenticationSuccessHandler loginSuccessHandler;
     private final AuthenticationSuccessHandler socialSuccessHandler;
     private final JwtService jwtService;
 
     public SecurityConfig(
-            AuthenticationConfiguration authenticationConfiguration,
-            @Qualifier("LoginSuccessHandler") AuthenticationSuccessHandler loginSuccessHandler,
             @Qualifier("SocialSuccessHandler") AuthenticationSuccessHandler socialSuccessHandler,
             JwtService jwtService
     ) {
-        this.authenticationConfiguration = authenticationConfiguration;
-        this.loginSuccessHandler = loginSuccessHandler;
         this.socialSuccessHandler = socialSuccessHandler;
         this.jwtService = jwtService;
-    }
-
-    // 커스텀 자체 로그인 필터를 위한 AuthenticationManager Bean 수동 등록
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
-        return configuration.getAuthenticationManager();
     }
 
     // 권한 계층
     @Bean
     public RoleHierarchy roleHierarchy() {
         return RoleHierarchyImpl.withRolePrefix("ROLE_")
-                .role(UserRoleType.ADMIN.name()).implies(UserRoleType.USER.name())
+                .role(UserRoleType.ADMIN.name()).implies(UserRoleType.TEACHER.name())
+                .role(UserRoleType.TEACHER.name()).implies(UserRoleType.STUDENT.name())
                 .build();
     }
 
@@ -122,9 +107,9 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/jwt/exchange", "/jwt/refresh").permitAll()
                         .requestMatchers(HttpMethod.POST, "/user/exist", "/user").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/user").hasRole(UserRoleType.USER.name())
-                        .requestMatchers(HttpMethod.PUT, "/user").hasRole(UserRoleType.USER.name())
-                        .requestMatchers(HttpMethod.DELETE, "/user").hasRole(UserRoleType.USER.name())
+                        .requestMatchers(HttpMethod.GET, "/user").hasRole(UserRoleType.STUDENT.name())
+                        .requestMatchers(HttpMethod.PUT, "/user").hasRole(UserRoleType.STUDENT.name())
+                        .requestMatchers(HttpMethod.DELETE, "/user").hasRole(UserRoleType.STUDENT.name())
                         .anyRequest().authenticated()
                 );
 
@@ -142,8 +127,6 @@ public class SecurityConfig {
         // 커스텀 필터 추가
         http
                 .addFilterBefore(new JWTFilter(), LogoutFilter.class);
-        http
-                .addFilterBefore(new LoginFilter(authenticationManager(authenticationConfiguration), loginSuccessHandler), UsernamePasswordAuthenticationFilter.class);
 
         // 세션 필터 설정 (STATELESS)
         http

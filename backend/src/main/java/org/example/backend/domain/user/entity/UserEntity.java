@@ -63,4 +63,8 @@ public class UserEntity {
         this.nickname = dto.getNickname();
     }
 
+    public void updateRole(UserRoleType roleType) {
+        this.roleType = roleType;
+    }
+
 }
