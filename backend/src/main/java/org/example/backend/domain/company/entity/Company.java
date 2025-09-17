@@ -36,4 +36,11 @@ public class Company {
         this.backgroundUrl = backgroundUrl;
         this.description = description;
     }
+
+    public void update(String companyName, String logoUrl, String backgroundUrl, String description) {
+        this.companyName = companyName;
+        this.logoUrl = logoUrl;
+        this.backgroundUrl = backgroundUrl;
+        this.description = description;
+    }
 }
